@@ -6,66 +6,58 @@ import {
 } from 'recharts';
 
 const GraficasPage = () => {
-  const [datos, setDatos] = useState([]);
-  const [concluidas, setConcluidas] = useState([]);
+  const [porDepartamento, setPorDepartamento] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
-  const token = 'TU_TOKEN_AQUI'; // reemplaza por tu lógica de auth
+  useEffect(() => {
+    // Ensure we are in the client environment before using localStorage
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!token) return;
+
+      setLoading(true);
       try {
-        const res = await axios.get('http://localhost:8000/api/graficas', {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/estadisticas/departamentos`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        const data = res.data;
-        setDatos(data.estadisticas);
-        setConcluidas(data.concluidas);
-      } catch (error) {
-        console.error('Error al cargar datos de gráficas:', error);
+        setPorDepartamento(res.data);
+      } catch (err) {
+        console.error('Error al cargar datos de gráficas:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [token]);
 
-  if (loading) return <p className="text-center p-4">Cargando gráficas...</p>;
+  if (loading) return <p className="text-center p-4">Cargando gráfica...</p>;
 
   return (
     <div className="p-6 space-y-10">
       <h2 className="text-2xl font-bold">Gráficas de Solicitudes</h2>
 
-      {/* Gráfica de todas las solicitudes por estado */}
+      {/* Gráfica de solicitudes por departamento */}
       <div className="bg-white p-4 rounded-2xl shadow-md">
-        <h3 className="text-lg font-semibold mb-4">Solicitudes por Estado</h3>
+        <h3 className="text-lg font-semibold mb-4">Solicitudes por Departamento</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={datos}>
+          <BarChart data={porDepartamento}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="estado" />
+            <XAxis dataKey="departamento" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="total" fill="#3b82f6" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Gráfica de solicitudes concluidas */}
-      <div className="bg-white p-4 rounded-2xl shadow-md">
-        <h3 className="text-lg font-semibold mb-4">Solicitudes Concluidas</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={concluidas}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="estado" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="total" fill="#10b981" />
+            <Bar dataKey="total" fill="#f59e0b" />
           </BarChart>
         </ResponsiveContainer>
       </div>

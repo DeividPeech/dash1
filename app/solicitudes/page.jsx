@@ -27,15 +27,16 @@ const SolicitudesPage = () => {
   const { user } = useAuth();
   const [solicitudes, setSolicitudes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedFolio, setSelectedFolio] = useState(null);
   const [openReasignar, setOpenReasignar] = useState(false);
   const [openEstado, setOpenEstado] = useState(false);
+  const [openHistorial, setOpenHistorial] = useState(false);
   const [nuevoDepartamento, setNuevoDepartamento] = useState('');
   const [nuevoEstado, setNuevoEstado] = useState('');
+  const [historialSeleccionado, setHistorialSeleccionado] = useState([]);
 
   const rowsPerPage = 5;
 
@@ -44,11 +45,11 @@ const SolicitudesPage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://192.168.0.195:8000/api/solicitudes`, {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/solicitudes`, {
+        
         params: {
           page,
           per_page: rowsPerPage,
-          search: search || null,
           departamento_id: user.departamento_id,
         },
         headers: {
@@ -66,12 +67,7 @@ const SolicitudesPage = () => {
 
   useEffect(() => {
     fetchSolicitudes();
-  }, [page, search, user]);
-
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-    setPage(1);
-  };
+  }, [page, user]);
 
   const handleMenuClick = (event, folio) => {
     setAnchorEl(event.currentTarget);
@@ -94,6 +90,17 @@ const SolicitudesPage = () => {
     handleMenuClose();
   };
 
+  const abrirModalHistorial = () => {
+    const solicitud = solicitudes.find((s) => s.folio === selectedFolio);
+    if (solicitud && solicitud.historial) {
+      setHistorialSeleccionado(solicitud.historial);
+    } else {
+      setHistorialSeleccionado([]);
+    }
+    setOpenHistorial(true);
+    handleMenuClose();
+  };
+
   const cerrarModalReasignar = () => {
     setOpenReasignar(false);
     setNuevoDepartamento('');
@@ -106,10 +113,16 @@ const SolicitudesPage = () => {
     setSelectedFolio(null);
   };
 
+  const cerrarModalHistorial = () => {
+    setOpenHistorial(false);
+    setHistorialSeleccionado([]);
+    setSelectedFolio(null);
+  };
+
   const reasignarDepartamento = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://192.168.0.195:8000/api/solicitudes/${selectedFolio}/reasignar`, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/solicitudes/${selectedFolio}/reasignar`, {
         departamento_id: nuevoDepartamento,
       }, {
         headers: {
@@ -128,7 +141,7 @@ const SolicitudesPage = () => {
   const cambiarEstado = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://192.168.0.195:8000/api/solicitudes/${selectedFolio}/estado`, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/solicitudes/${selectedFolio}/estado`, {
         estado: nuevoEstado,
       }, {
         headers: {
@@ -147,14 +160,6 @@ const SolicitudesPage = () => {
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Solicitudes</h1>
-
-      <TextField
-        label="Buscar por folio"
-        variant="outlined"
-        value={search}
-        onChange={handleSearchChange}
-        className="mb-4"
-      />
 
       {loading ? (
         <div className="flex justify-center mt-10">
@@ -211,6 +216,7 @@ const SolicitudesPage = () => {
       >
         <MenuItem onClick={abrirModalReasignar}>Reasignar</MenuItem>
         <MenuItem onClick={abrirModalEstado}>Cambiar estatus</MenuItem>
+        <MenuItem onClick={abrirModalHistorial}>Ver historial</MenuItem>
       </Menu>
 
       {/* Modal Reasignar */}
@@ -266,6 +272,40 @@ const SolicitudesPage = () => {
           <Button variant="contained" onClick={cambiarEstado} disabled={!nuevoEstado}>
             Confirmar
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal Historial */}
+      <Dialog open={openHistorial} onClose={cerrarModalHistorial} fullWidth maxWidth="md">
+        <DialogTitle>Historial de la Solicitud</DialogTitle>
+        <DialogContent>
+          {historialSeleccionado.length === 0 ? (
+            <p>No hay historial disponible.</p>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Fecha</TableCell>
+                    <TableCell>Acción</TableCell>
+                    <TableCell>Usuario</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {historialSeleccionado.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{new Date(item.fecha).toLocaleString()}</TableCell>
+                      <TableCell>{item.accion}</TableCell>
+                      <TableCell>{item.usuario}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cerrarModalHistorial}>Cerrar</Button>
         </DialogActions>
       </Dialog>
     </div>
