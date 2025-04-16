@@ -33,6 +33,13 @@ const LoginForm = () => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-6"
       >
+        <div className="flex justify-center">
+          <img
+            src="https://satq.qroo.gob.mx/logos/LOGO-CONJUNTO-COMPACTO.png" // Reemplaza con la ruta de tu logotipo
+            alt="Logotipo"
+            className="h-16 w-auto"
+          />
+        </div>
         <h2 className="text-2xl font-bold text-center text-gray-800">Iniciar Sesión</h2>
 
         <TextField

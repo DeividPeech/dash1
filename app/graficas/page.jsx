@@ -45,6 +45,13 @@ const GraficasPage = () => {
 
   return (
     <div className="p-6 space-y-10">
+      <div className="flex justify-center mb-6">
+        <img
+          src="https://satq.qroo.gob.mx/logos/LOGO-CONJUNTO-COMPACTO.png" // Reemplaza con la ruta de tu logotipo
+          alt="Logotipo"
+          className="h-16 w-auto"
+        />
+      </div>
       <h2 className="text-2xl font-bold">Gráficas de Solicitudes</h2>
 
       {/* Gráfica de solicitudes por departamento */}
