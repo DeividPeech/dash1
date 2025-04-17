@@ -1,14 +1,15 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import useAuth from '../../hook/useAuth';
+import useAuth from '@/hook/useAuth';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, TextField, Menu, MenuItem, IconButton, Pagination,
+  Paper, Menu, MenuItem, IconButton, Pagination,
   CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
   Button, FormControl, InputLabel, Select
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Nav from '@/components/Nav';
 
 const departamentos = [
   { id: 1, nombre: 'Recursos Humanos' },
@@ -158,13 +159,8 @@ const SolicitudesPage = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-center mb-4">
-        <img
-          src="/path/to/logo.png" // Reemplaza con la ruta de tu logotipo
-          alt="Logotipo"
-          className="h-16 w-auto"
-        />
-      </div>
+      <Nav />
+
       <h1 className="text-3xl font-bold mb-4">Solicitudes</h1>
 
       {loading ? (
@@ -215,7 +211,100 @@ const SolicitudesPage = () => {
         </>
       )}
 
-      {/* Menús y Modales (sin cambios) */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={abrirModalReasignar}>Reasignar</MenuItem>
+        <MenuItem onClick={abrirModalEstado}>Cambiar estatus</MenuItem>
+        <MenuItem onClick={abrirModalHistorial}>Ver historial</MenuItem>
+      </Menu>
+
+      <Dialog open={openReasignar} onClose={cerrarModalReasignar}>
+        <DialogTitle>Reasignar Departamento</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth>
+            <InputLabel>Departamento</InputLabel>
+            <Select
+              value={nuevoDepartamento}
+              onChange={(e) => setNuevoDepartamento(e.target.value)}
+              label="Departamento"
+            >
+              {departamentos.map((dep) => (
+                <MenuItem key={dep.id} value={dep.id}>
+                  {dep.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cerrarModalReasignar}>Cancelar</Button>
+          <Button variant="contained" onClick={reasignarDepartamento} disabled={!nuevoDepartamento}>
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openEstado} onClose={cerrarModalEstado}>
+        <DialogTitle>Cambiar Estado</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth>
+            <InputLabel>Estado</InputLabel>
+            <Select
+              value={nuevoEstado}
+              onChange={(e) => setNuevoEstado(e.target.value)}
+              label="Estado"
+            >
+              {estados.map((e) => (
+                <MenuItem key={e.value} value={e.value}>
+                  {e.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cerrarModalEstado}>Cancelar</Button>
+          <Button variant="contained" onClick={cambiarEstado} disabled={!nuevoEstado}>
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openHistorial} onClose={cerrarModalHistorial} fullWidth maxWidth="md">
+        <DialogTitle>Historial de la Solicitud</DialogTitle>
+        <DialogContent>
+          {historialSeleccionado.length === 0 ? (
+            <p>No hay historial disponible.</p>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Fecha</TableCell>
+                    <TableCell>Acción</TableCell>
+                    <TableCell>Usuario</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {historialSeleccionado.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{new Date(item.fecha).toLocaleString()}</TableCell>
+                      <TableCell>{item.accion}</TableCell>
+                      <TableCell>{item.usuario}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cerrarModalHistorial}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

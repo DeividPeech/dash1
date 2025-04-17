@@ -4,6 +4,8 @@ import axios from 'axios';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import { Box, Typography, CircularProgress } from '@mui/material';
+import Nav from '@/components/Nav';
 
 const GraficasPage = () => {
   const [porDepartamento, setPorDepartamento] = useState([]);
@@ -11,7 +13,6 @@ const GraficasPage = () => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // Ensure we are in the client environment before using localStorage
     if (typeof window !== 'undefined') {
       const storedToken = localStorage.getItem('token');
       setToken(storedToken);
@@ -41,22 +42,26 @@ const GraficasPage = () => {
     fetchData();
   }, [token]);
 
-  if (loading) return <p className="text-center p-4">Cargando gráfica...</p>;
+  if (loading) {
+    return (
+      <Box className="flex justify-center p-4">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <div className="p-6 space-y-10">
-      <div className="flex justify-center mb-6">
-        <img
-          src="https://satq.qroo.gob.mx/logos/LOGO-CONJUNTO-COMPACTO.png" // Reemplaza con la ruta de tu logotipo
-          alt="Logotipo"
-          className="h-16 w-auto"
-        />
-      </div>
-      <h2 className="text-2xl font-bold">Gráficas de Solicitudes</h2>
+      <Nav />
 
-      {/* Gráfica de solicitudes por departamento */}
-      <div className="bg-white p-4 rounded-2xl shadow-md">
-        <h3 className="text-lg font-semibold mb-4">Solicitudes por Departamento</h3>
+      <Typography variant="h4" className="font-bold text-center">
+        Gráficas de Solicitudes
+      </Typography>
+
+      <Box className="bg-white p-6 rounded-2xl shadow-md mt-6">
+        <Typography variant="h6" className="font-semibold mb-4">
+          Solicitudes por Departamento
+        </Typography>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={porDepartamento}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -67,7 +72,7 @@ const GraficasPage = () => {
             <Bar dataKey="total" fill="#f59e0b" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </Box>
     </div>
   );
 };

@@ -2,9 +2,7 @@
 import useSWR from 'swr';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
-// Configurar axios con baseURL y headers
 const api = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL}`,
   headers: {
@@ -12,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// Asignar token desde localStorage si existe
 if (typeof window !== 'undefined') {
   const token = localStorage.getItem('token');
   if (token) {
@@ -20,7 +17,6 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Usar axios configurado como fetcher para SWR
 const fetcher = (url) => api.get(url).then(res => res.data);
 
 const useAuth = () => {
@@ -36,7 +32,7 @@ const useAuth = () => {
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      await mutate(); // Refresca el usuario
+      await mutate(); 
       router.push('/graficas');
     } catch (err) {
       throw err;

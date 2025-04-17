@@ -1,7 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-import { TextField, Button, CircularProgress } from '@mui/material';
-import useAuth from '../hook/useAuth'; // Asegúrate que esta ruta sea correcta
+import { TextField, Button, CircularProgress, Typography } from '@mui/material';
+import useAuth from '@/hook/useAuth';
+import Logo from '@/components/Logo';
 
 const LoginForm = () => {
   const { login } = useAuth();
@@ -16,10 +17,16 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError(''); 
+
+    if (!form.email || !form.password) {
+      setError('El correo electrónico y la contraseña son obligatorios');
+      setLoading(false);
+      return;
+    }
 
     try {
-      await login(form); // Llama al hook directamente
+      await login(form);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al iniciar sesión');
     } finally {
@@ -31,16 +38,15 @@ const LoginForm = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-6"
+        className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-8"
       >
-        <div className="flex justify-center">
-          <img
-            src="https://satq.qroo.gob.mx/logos/LOGO-CONJUNTO-COMPACTO.png" // Reemplaza con la ruta de tu logotipo
-            alt="Logotipo"
-            className="h-16 w-auto"
-          />
+        <div className="flex justify-center mb-8">
+          <Logo /> 
         </div>
-        <h2 className="text-2xl font-bold text-center text-gray-800">Iniciar Sesión</h2>
+        
+        <Typography variant="h5" component="h2" align="center" color="textPrimary" className="font-bold mb-6">
+          Iniciar Sesión
+        </Typography>
 
         <TextField
           label="Correo electrónico"
@@ -49,6 +55,9 @@ const LoginForm = () => {
           name="email"
           value={form.email}
           onChange={handleChange}
+          error={!!error} 
+          helperText={error && !form.email ? 'El correo electrónico es obligatorio' : ''}
+          className="mb-6" 
         />
         <TextField
           label="Contraseña"
@@ -58,10 +67,13 @@ const LoginForm = () => {
           name="password"
           value={form.password}
           onChange={handleChange}
+          error={!!error} 
+          helperText={error && !form.password ? 'La contraseña es obligatoria' : ''}
+          className="mb-6" 
         />
 
         {error && (
-          <p className="text-red-500 text-sm text-center">{error}</p>
+          <p className="text-red-500 text-sm text-center mb-6">{error}</p>
         )}
 
         <Button
@@ -70,6 +82,7 @@ const LoginForm = () => {
           color="primary"
           fullWidth
           disabled={loading}
+          className="py-2"
         >
           {loading ? <CircularProgress size={24} /> : 'Entrar'}
         </Button>
